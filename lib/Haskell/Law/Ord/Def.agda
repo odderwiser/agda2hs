@@ -80,9 +80,33 @@ eq2ngt x y h
     | equality (compare x y) EQ h
   = refl
 
+lt2lte : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
+  → ∀ (x y : a) → (x < y) ≡ True → (x <= y) ≡ True
+lt2lte x y h = &&-rightTrue' (x < y) (x <= y) (x /= y) (lt2LteNeq x y) h
+
 gte2GtEq : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x >= y) ≡ (x > y || x == y)
-gte2GtEq x y = trustMe -- TODO
+gte2GtEq x y with (x > y) in h₁ 
+gte2GtEq x y | True = 
+  begin
+    (x >= y)
+  ≡˘⟨ (lte2gte y x)⟩ 
+    (y <= x)
+  ≡⟨(lt2lte y x (trans (lt2gt y x) h₁) )⟩
+    True
+  ∎
+gte2GtEq x y | False with (x == y) in h₂
+gte2GtEq x y | False | True = 
+  begin
+    (x >= y)
+  ≡⟨ {!!} ⟩ 
+    {!!}
+  ≡⟨{!!}⟩
+    True
+  ∎
+gte2GtEq x y | False | False = {!!}
+
+
 
 gte2nlt : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x >= y) ≡ not (x < y)
@@ -91,7 +115,7 @@ gte2nlt x y
     | compareGt x y
     | compareEq x y
     | sym (compareLt x y)
-  = trustMe -- TODO
+  = {!!} --trustMe -- TODO
 
 gte2nLT : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x >= y) ≡ (compare x y /= LT)
@@ -126,10 +150,6 @@ eq2lte x y h
   rewrite lte2ngt x y
     | eq2ngt x y h
   = refl
-
-lt2lte : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
-  → ∀ (x y : a) → (x < y) ≡ True → (x <= y) ≡ True
-lt2lte x y h = &&-rightTrue' (x < y) (x <= y) (x /= y) (lt2LteNeq x y) h
 
 eq2gte : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x == y) ≡ True → (x >= y) ≡ True
