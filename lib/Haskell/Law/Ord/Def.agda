@@ -84,38 +84,82 @@ lt2lte : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x < y) ≡ True → (x <= y) ≡ True
 lt2lte x y h = &&-rightTrue' (x < y) (x <= y) (x /= y) (lt2LteNeq x y) h
 
+eqOrLeft : ∀ {x y a : Bool} → x ≡ y →  (x || a) ≡ (y || a)
+eqOrLeft {False} {False} f = refl
+eqOrLeft {True} {True} f = refl
+
+eqOrRight : ∀ {x y a : Bool} → x ≡ y →  (a || x) ≡ (a || y)
+eqOrRight {False} {False} f = refl
+eqOrRight {True} {True} f = refl
+
+eqA : ∀ { x y z : Ord} → x ≡ y → (x == z) → (y == z)
+eqA f g = ?
+
 gte2GtEq : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x >= y) ≡ (x > y || x == y)
-gte2GtEq x y with (x > y) in h₁ 
-gte2GtEq x y | True = 
+gte2GtEq x y with (compare x y) in h₁
+gte2GtEq x y | LT = 
   begin
     (x >= y)
-  ≡˘⟨ (lte2gte y x)⟩ 
-    (y <= x)
-  ≡⟨(lt2lte y x (trans (lt2gt y x) h₁) )⟩
-    True
+  ≡˘⟨ {!   !} ⟩ 
+    ((LT == GT) || (x == y))
+  ≡˘⟨ {!   !} ⟩
+    ((compare x y == GT) || (x == y))
+  ≡˘⟨ (eqOrLeft (compareGt x y) ) ⟩
+    (x > y || x == y)
   ∎
-gte2GtEq x y | False with (x == y) in h₂
-gte2GtEq x y | False | True = 
-  begin
-    (x >= y)
-  ≡⟨ {!!} ⟩ 
-    {!!}
-  ≡⟨{!!}⟩
-    True
-  ∎
-gte2GtEq x y | False | False = {!!}
+gte2GtEq x y | EQ = {!   !}
+gte2GtEq x y | GT = {!   !}
+-- gte2GtEq x y with (x > y) in h₁ 
+-- gte2GtEq x y | True = 
+--   begin
+--     (x >= y)
+--   ≡˘⟨ (lte2gte y x)⟩ 
+--     (y <= x)
+--   ≡⟨(lt2lte y x (trans (lt2gt y x) h₁) )⟩
+--     True
+--   ∎
+-- gte2GtEq x y | False with (x == y) in h₂
+-- gte2GtEq x y | False | True = 
+--   begin
+--     (x >= y)
+--   ≡⟨ {!!} ⟩ 
+--     {!!}
+--   ≡⟨{!!}⟩
+--     True
+--   ∎
+-- gte2GtEq x y | False | False = {!!}
 
 
+equationalNegation₁ : ∀ {x y : Bool } → x ≡ y → (not x) ≡ (not y)
+equationalNegation₁ {False} {False} h₁ = refl 
+equationalNegation₁ {True} {True} h₁ = refl  
+
+deMorgan1 : ∀ { x y : Bool } → not (x && y) ≡ ((not x) || (not y))
+deMorgan1 {False} {False} = refl
+deMorgan1 {False} {True} = refl  
+deMorgan1 {True} {False} = refl 
+deMorgan1 {True} {True} = refl
 
 gte2nlt : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x >= y) ≡ not (x < y)
-gte2nlt x y
-  rewrite gte2GtEq x y
-    | compareGt x y
-    | compareEq x y
-    | sym (compareLt x y)
-  = {!!} --trustMe -- TODO
+gte2nlt x y = 
+  begin
+    (x >= y)
+  ≡⟨ {!!} ⟩ 
+   ((not (x <= y)) || (x == y))
+  ≡⟨ {!   !} ⟩ 
+    (not (x <= y) || not (x /= y))
+  ≡˘⟨ deMorgan1  {x <= y} {x /= y} ⟩ 
+    not (x <= y && x /= y)
+  ≡˘⟨ (equationalNegation₁ (lt2LteNeq x y)) ⟩
+    not (x < y)
+  ∎
+  -- rewrite gte2GtEq x y
+  --   | compareGt x y
+  --   | compareEq x y
+  --   | sym (compareLt x y)
+  -- = {!!} --trustMe -- TODO
 
 gte2nLT : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄
   → ∀ (x y : a) → (x >= y) ≡ (compare x y /= LT)
@@ -189,3 +233,4 @@ postulate instance
   iLawfulOrdList : ⦃ iOrdA : Ord a ⦄ → ⦃ IsLawfulOrd a ⦄ → IsLawfulOrd (List a)
 
   iLawfulOrdEither : ⦃ iOrdA : Ord a ⦄ → ⦃ iOrdB : Ord b ⦄ →  ⦃ IsLawfulOrd a ⦄ → ⦃ IsLawfulOrd b ⦄ → IsLawfulOrd (Either a b)
+ 
