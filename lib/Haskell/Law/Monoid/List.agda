@@ -29,4 +29,3 @@ instance
     rewrite ++-[] (x ∷ xs)
       | concatenation xs
     = refl
-    
